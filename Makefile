@@ -19,7 +19,7 @@ ifeq ($(filter $(DEBUG), false f FALSE F), )
 endif
 
 # flags to pass compiler
-CFLAGS = $(DEBUG_FLAG) -std=c11
+CFLAGS = $(DEBUG_FLAG) -std=c11 -D_BSD_SOURCE
 
 # compiler to use
 CC = gcc
