@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <errno.h>
 
@@ -23,10 +24,19 @@ void print_file(char * f_name);
 void report_error(char * s, int e);
 void print_dir(char * dir_name);
 
-int main(void)
+int main(int argc, char * argv [])
 {
-    char * dir_path = ".";
-    puts("Stat for dir: "DIR_COLOR"."RESET"/");
+    char * dir_path;
+    if (argc <= 1)
+    {
+        dir_path = ".";
+    }
+    else 
+    {
+        dir_path = argv[1];
+    }
+
+    printf("Stat for dir: "DIR_COLOR"%s"RESET"\n", dir_path);
 
     int total_size = 0;
 
@@ -50,8 +60,9 @@ int main(void)
         {
             if (errno != 0)
             {
-                report_error("Unable to read from directory stream", errno);
-                return 2;
+                perror("readdir");
+                // report_error("Unable to read from directory stream", errno);
+                return EXIT_FAILURE;
             }
             break;
         }
@@ -61,15 +72,19 @@ int main(void)
         }
         else
         {
-            stat(file->d_name, &info);
             print_file(file->d_name);
+            if (stat(file->d_name, &info) == -1)
+            {
+                perror("stat");
+                return EXIT_FAILURE;
+            }
             total_size += info.st_size;
         }
     }
 
     printf("Total Directory Size: %d\n", total_size);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 void print_file(char * f_name)
