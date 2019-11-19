@@ -35,8 +35,28 @@ int main(int argc, char * argv [])
     {
         dir_path = argv[1];
     }
+    
+    int dirname_len = strlen(dir_path);
+    if (dirname_len >= 254)
+    {
+        fputs("Directory name too long\n", stderr);
+    }
 
-    printf("Stat for dir: "DIR_COLOR"%s"RESET"\n", dir_path);
+    char dirname[256];
+
+    strncpy(dirname, dir_path, 256);
+
+    if (dirname[dirname_len - 1] != '/')
+    {
+        dirname[dirname_len] = '/';
+        dirname[dirname_len + 1] = '\0';
+    }
+
+    char dir_wo_slash[255];
+    strncpy(dir_wo_slash, dirname, 255);
+    dir_wo_slash[strlen(dirname) - 1] = '\0';
+
+    printf("Stat for dir: "DIR_COLOR"%s"RESET"/\n", dir_wo_slash);
 
     int total_size = 0;
 
@@ -46,10 +66,13 @@ int main(int argc, char * argv [])
     ds = opendir(dir_path);
     if (!ds)
     {
-        report_error("Unable to open directory", errno);
+        perror("opendir");
         return 1;
     }
+    
+    char fname[256];
 
+    // printf("dirname: %s\n", dirname);
 
     struct stat info;
     while (1)
@@ -72,8 +95,9 @@ int main(int argc, char * argv [])
         }
         else
         {
+            snprintf(fname, 256, "%s%s", dirname, file->d_name);
             print_file(file->d_name);
-            if (stat(file->d_name, &info) == -1)
+            if (stat(fname, &info) == -1)
             {
                 perror("stat");
                 return EXIT_FAILURE;
